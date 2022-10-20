@@ -62,3 +62,11 @@ export const signInWithGooglePopUp = () =>
   //   },{});
   //   return categoryMap
   // }
+//   export const getCollectionAndDocuments = async()=>{
+//     const db =getFirestore();
+//     const collectionRef =  collection(db,"movies");
+//     const q =  query(collectionRef);
+//     const querySnapshot = await getDocs(q)
+//     const result =querySnapshot.docs.map((docSnapshot)=>(docSnapshot.data()))
+//     return result
+// }

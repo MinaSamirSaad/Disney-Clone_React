@@ -9,7 +9,7 @@ import { useEffect } from 'react';
 import { useDispatch,useSelector } from 'react-redux';
 import { setMovies } from '../../features/Movie/movieSlice';
 import { selectUserName } from '../../features/user/userSlice';
-import { collection,query,getDocs ,getFirestore} from 'firebase/firestore';
+import { getFirestore,collection,query,getDocs } from 'firebase/firestore';
 const Home = ()=>{
     const dispatch =useDispatch();
     const userName = useSelector(selectUserName);
@@ -17,45 +17,48 @@ const Home = ()=>{
     let newDisneys =[];
     let originals = [];
     let trending = [];
-    useEffect(()=>{
-        const handlefunc=(data)=>{
-            switch (data){
-                case "recommend":recommends.push({id:data.id ,...data.data()});
-                break;
-                case "new":newDisneys.push({id:data.id, ...data.data()});
-                break;
-                case "original":originals.push({id:data.id, ...data.data()});
-                break;
-                case "trending":trending.push({id:data.id, ...data.data()});
-                break;
-                default:console.log("booo")
-                }
-        }
-        const db =getFirestore();
+    useEffect(() => {
+        const bigFun = async()=>{
         const getCollectionAndDocuments = async()=>{
-            const collectionRef = collection(db,"movies");
-            const q = query(collectionRef);
+            const db =getFirestore();
+            const collectionRef =  collection(db,"movies");
+            const q =  query(collectionRef);
             const querySnapshot = await getDocs(q)
-            .then(()=>{
-            querySnapshot.docs.map((docSnapshot)=>handlefunc(docSnapshot.data().type))
-            }).then(()=>{
-               console.log(recommends) 
+            return querySnapshot.docs.map((doc)=>{
+                switch (doc.data().type) {
+                    case "recommend":
+                      recommends = [...recommends, { id: doc.id, ...doc.data() }];
+                      console.log(recommends)
+                      break;
+          
+                    case "new":
+                      newDisneys = [...newDisneys, { id: doc.id, ...doc.data() }];
+                      break;
+          
+                    case "original":
+                      originals = [...originals, { id: doc.id, ...doc.data() }];
+                      break;
+          
+                    case "trending":
+                      trending = [...trending, { id: doc.id, ...doc.data() }];
+                      break;
+                      default:console.log("mmm")
+                  }
+                })
+            
+        }
+        await getCollectionAndDocuments()
+          dispatch(
+            setMovies({
+              recommend: recommends,
+              newDisney: newDisneys,
+              original: originals,
+              trending: trending,
             })
-        
-    }
-    dispatch(
-        setMovies({
-          recommend: recommends,
-          newDisney: newDisneys,
-          original: originals,
-          trending: trending,
-        })
-      );
-      getCollectionAndDocuments()
+          );}
+          bigFun()
+      }, [userName]);
       console.log(recommends)
-      
-},[userName])
-
     return(
         <Container>
             <ImgSlider/>
